@@ -1,0 +1,48 @@
+﻿@model TechMove.Web.Models.ServiceRequest
+
+@{
+    ViewData["Title"] = "Service Request Details";
+}
+
+<h2>Service Request Details</h2>
+
+<div class="card col-md-8">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-4">Contract</dt>
+            <dd class="col-sm-8">@Model.Contract?.ServiceLevel</dd>
+
+            <dt class="col-sm-4">Client</dt>
+            <dd class="col-sm-8">@Model.Contract?.Client?.Name</dd>
+
+            <dt class="col-sm-4">Description</dt>
+            <dd class="col-sm-8">@Model.Description</dd>
+
+            <dt class="col-sm-4">Cost (USD)</dt>
+            <dd class="col-sm-8">$@(Model.CostUSD.ToString("F2"))</dd>
+
+            <dt class="col-sm-4">Cost (ZAR)</dt>
+            <dd class="col-sm-8">R@(Model.CostZAR.ToString("F2"))</dd>
+
+            <dt class="col-sm-4">Exchange Rate Used</dt>
+            <dd class="col-sm-8">@(Model.ExchangeRateUsed.ToString("F4"))</dd>
+
+            <dt class="col-sm-4">Status</dt>
+            <dd class="col-sm-8">
+                <span class="badge
+                    @(Model.Status == TechMove.Web.Models.ServiceRequestStatus.Open ? "bg-primary" :
+                        Model.Status == TechMove.Web.Models.ServiceRequestStatus.InProgress ? "bg-warning" :
+                        Model.Status == TechMove.Web.Models.ServiceRequestStatus.Resolved ? "bg-success" : "bg-secondary")">
+                    @Model.Status
+                </span>
+            </dd>
+
+            <dt class="col-sm-4">Created At</dt>
+            <dd class="col-sm-8">@(Model.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</dd>
+        </dl>
+    </div>
+</div>
+
+<br />
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

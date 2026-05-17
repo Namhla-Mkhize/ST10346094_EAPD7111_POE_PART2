@@ -1,0 +1,83 @@
+﻿@model TechMove.Web.Models.Contract
+
+@{
+    ViewData["Title"] = "Contract Details";
+}
+
+<h2>Contract Details</h2>
+
+<div class="card col-md-8">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-4">Client</dt>
+            <dd class="col-sm-8">@Model.Client?.Name</dd>
+
+            <dt class="col-sm-4">Start Date</dt>
+            <dd class="col-sm-8">@Model.StartDate.ToString("yyyy-MM-dd")</dd>
+
+            <dt class="col-sm-4">End Date</dt>
+            <dd class="col-sm-8">@Model.EndDate.ToString("yyyy-MM-dd")</dd>
+
+            <dt class="col-sm-4">Status</dt>
+            <dd class="col-sm-8">
+                <span class="badge
+                    @(Model.Status == TechMove.Web.Models.ContractStatus.Active ? "bg-success" :
+                        Model.Status == TechMove.Web.Models.ContractStatus.Expired ? "bg-danger" :
+                        Model.Status == TechMove.Web.Models.ContractStatus.OnHold ? "bg-warning" : "bg-secondary")">
+                    @Model.Status
+                </span>
+            </dd>
+
+            <dt class="col-sm-4">Service Level</dt>
+            <dd class="col-sm-8">@Model.ServiceLevel</dd>
+
+            <dt class="col-sm-4">Signed Agreement</dt>
+            <dd class="col-sm-8">
+                @if (!string.IsNullOrEmpty(Model.SignedAgreementFileName))
+                {
+                    <a asp-action="Download" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
+                        Download PDF
+                    </a>
+                }
+                else
+                {
+                    <span class="text-muted">No file uploaded</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<br />
+<h4>Service Requests</h4>
+@if (Model.ServiceRequests.Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Cost (USD)</th>
+                <th>Cost (ZAR)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sr in Model.ServiceRequests)
+            {
+                <tr>
+                    <td>@sr.Description</td>
+                    <td>$@sr.CostUSD</td>
+                    <td>R@sr.CostZAR</td>
+                    <td>@sr.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="text-muted">No service requests for this contract.</p>
+}
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

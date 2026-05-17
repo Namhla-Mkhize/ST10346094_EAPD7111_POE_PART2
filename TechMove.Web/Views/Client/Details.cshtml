@@ -1,0 +1,29 @@
+﻿@model TechMove.Web.Models.Client
+
+@{
+    ViewData["Title"] = "Client Details";
+}
+
+<h2>Client Details</h2>
+
+<div class="card col-md-6">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-4">Name</dt>
+            <dd class="col-sm-8">@Model.Name</dd>
+
+            <dt class="col-sm-4">Contact Details</dt>
+            <dd class="col-sm-8">@Model.ContactDetails</dd>
+
+            <dt class="col-sm-4">Region</dt>
+            <dd class="col-sm-8">@Model.Region</dd>
+
+            <dt class="col-sm-4">Total Contracts</dt>
+            <dd class="col-sm-8">@Model.Contracts.Count()</dd>
+        </dl>
+    </div>
+</div>
+
+<br />
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>
