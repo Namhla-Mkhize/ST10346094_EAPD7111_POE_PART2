@@ -14,7 +14,7 @@ namespace TechMove.Web.Repositories
         }
 
         public async Task<IEnumerable<Client>> GetAllAsync() =>
-            await _context.Clients.ToListAsync();
+        await _context.Clients.Include(c => c.Contracts).ToListAsync();
 
         public async Task<Client?> GetByIdAsync(int id) =>
             await _context.Clients

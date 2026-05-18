@@ -27,9 +27,11 @@ namespace TechMove.Web.Repositories
             var query = _context.Contracts.Include(c => c.Client).AsQueryable();
 
             if (startDate.HasValue)
-                query = query.Where(c => c.StartDate >= startDate.Value);
+                query = query.Where(c => c.EndDate >= startDate.Value);
+
             if (endDate.HasValue)
-                query = query.Where(c => c.EndDate <= endDate.Value);
+                query = query.Where(c => c.StartDate <= endDate.Value);
+
             if (status.HasValue)
                 query = query.Where(c => c.Status == status.Value);
 
