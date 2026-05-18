@@ -13,10 +13,10 @@
             <dd class="col-sm-8">@Model.Client?.Name</dd>
 
             <dt class="col-sm-4">Start Date</dt>
-            <dd class="col-sm-8">@Model.StartDate.ToString("yyyy-MM-dd")</dd>
+            <dd class="col-sm-8">@(Model.StartDate.ToString("yyyy-MM-dd"))</dd>
 
             <dt class="col-sm-4">End Date</dt>
-            <dd class="col-sm-8">@Model.EndDate.ToString("yyyy-MM-dd")</dd>
+            <dd class="col-sm-8">@(Model.EndDate.ToString("yyyy-MM-dd"))</dd>
 
             <dt class="col-sm-4">Status</dt>
             <dd class="col-sm-8">
@@ -35,9 +35,9 @@
             <dd class="col-sm-8">
                 @if (!string.IsNullOrEmpty(Model.SignedAgreementFileName))
                 {
-                    <a asp-action="Download" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
-                        Download PDF
-                    </a>
+                        <a asp-action="Download" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
+                            Download PDF
+                        </a>
                 }
                 else
                 {
@@ -66,8 +66,8 @@
             {
                 <tr>
                     <td>@sr.Description</td>
-                    <td>$@sr.CostUSD</td>
-                    <td>R@sr.CostZAR</td>
+                    <td>$@(sr.CostUSD.ToString("F2"))</td>
+                    <td>R@(sr.CostZAR.ToString("F2"))</td>
                     <td>@sr.Status</td>
                 </tr>
             }
