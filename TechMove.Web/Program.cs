@@ -23,9 +23,10 @@ builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
 builder.Services.AddHttpClient<ICurrencyService, CurrencyService>();
 
 // Register ApiService
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7117/";
 builder.Services.AddHttpClient<ApiService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7117/");
+    client.BaseAddress = new Uri(apiBaseUrl);
 });
 
 // Session support for JWT token storage
