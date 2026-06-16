@@ -5,21 +5,19 @@ using TechMove.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add MVC
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 builder.Services.AddControllersWithViews();
 
-// Add DbContext (keeping for file service)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register Repositories (keeping for file service)
+// Keep repositories for FileService and ServiceRequestService
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IContractRepository, ContractRepository>();
 builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
-
-// Register Services
-builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
+builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddHttpClient<ICurrencyService, CurrencyService>();
 
 // Register ApiService
@@ -29,7 +27,6 @@ builder.Services.AddHttpClient<ApiService>(client =>
     client.BaseAddress = new Uri(apiBaseUrl);
 });
 
-// Session support for JWT token storage
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
 {
@@ -48,8 +45,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseRouting();
 app.UseSession();
+app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(

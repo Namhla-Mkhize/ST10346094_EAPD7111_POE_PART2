@@ -25,6 +25,11 @@ namespace TechMove.Web.Services
         private void AddAuthHeader()
         {
             var token = _httpContextAccessor.HttpContext?.Session.GetString("JwtToken");
+            
+
+            // Clear existing auth header first
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+
             if (!string.IsNullOrEmpty(token))
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }

@@ -1,89 +1,80 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TechMove.Web.Models;
-using TechMove.Web.Repositories;
+using TechMove.Web.Services;
 
 namespace TechMove.Web.Controllers
 {
     public class ClientController : Controller
     {
-        private readonly IClientRepository _clientRepository;
+        private readonly ApiService _apiService;
 
-        public ClientController(IClientRepository clientRepository)
+        public ClientController(ApiService apiService)
         {
-            _clientRepository = clientRepository;
+            _apiService = apiService;
         }
 
-        // GET: Client
         public async Task<IActionResult> Index()
         {
-            var clients = await _clientRepository.GetAllAsync();
+            var clients = await _apiService.GetClientsAsync();
             return View(clients);
         }
 
-        // GET: Client/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var client = await _clientRepository.GetByIdAsync(id);
+            var client = await _apiService.GetClientAsync(id);
             if (client == null) return NotFound();
             return View(client);
         }
 
-        // GET: Client/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Client/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Client client)
         {
             if (ModelState.IsValid)
             {
-                await _clientRepository.AddAsync(client);
+                await _apiService.CreateClientAsync(client);
                 return RedirectToAction(nameof(Index));
             }
             return View(client);
         }
 
-        // GET: Client/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var client = await _clientRepository.GetByIdAsync(id);
+            var client = await _apiService.GetClientAsync(id);
             if (client == null) return NotFound();
             return View(client);
         }
 
-        // POST: Client/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Client client)
         {
             if (id != client.Id) return NotFound();
-
             if (ModelState.IsValid)
             {
-                await _clientRepository.UpdateAsync(client);
+                await _apiService.UpdateClientAsync(client);
                 return RedirectToAction(nameof(Index));
             }
             return View(client);
         }
 
-        // GET: Client/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var client = await _clientRepository.GetByIdAsync(id);
+            var client = await _apiService.GetClientAsync(id);
             if (client == null) return NotFound();
             return View(client);
         }
 
-        // POST: Client/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _clientRepository.DeleteAsync(id);
+            await _apiService.DeleteClientAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }
