@@ -1,5 +1,7 @@
 <Solution>
   <Project Path="TechMove.API/TechMove.API.csproj" Id="3a907cb5-86d1-45c0-9769-88028f285159" />
-  <Project Path="TechMove.Tests/TechMove.Tests.csproj" Id="272f1374-10e1-483a-913e-08ad568d0b8d" />
+  <Project Path="TechMove.Tests/TechMove.Tests.csproj" Id="272f1374-10e1-483a-913e-08ad568d0b8d">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
   <Project Path="TechMove.Web/TechMove.Web.csproj" />
 </Solution>
