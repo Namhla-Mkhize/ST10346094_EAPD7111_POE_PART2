@@ -1,120 +1,104 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TechMove.Web.Models;
+using TechMove.Web.Repositories;
 using TechMove.Web.Services;
 
-namespace TechMove.Web.Controllers
+namespace TechMove.API.Controllers
 {
-    public class ServiceRequestController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class ServiceRequestsController : ControllerBase
     {
-        private readonly ApiService _apiService;
+        private readonly IServiceRequestRepository _serviceRequestRepository;
+        private readonly IServiceRequestService _serviceRequestService;
+        private readonly ICurrencyService _currencyService;
 
-        public ServiceRequestController(ApiService apiService)
+        public ServiceRequestsController(
+            IServiceRequestRepository serviceRequestRepository,
+            IServiceRequestService serviceRequestService,
+            ICurrencyService currencyService)
         {
-            _apiService = apiService;
+            _serviceRequestRepository = serviceRequestRepository;
+            _serviceRequestService = serviceRequestService;
+            _currencyService = currencyService;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            var serviceRequests = await _apiService.GetServiceRequestsAsync();
-            return View(serviceRequests);
-        }
-
-        public async Task<IActionResult> Details(int id)
-        {
-            var serviceRequest = await _apiService.GetServiceRequestAsync(id);
-            if (serviceRequest == null) return NotFound();
-            return View(serviceRequest);
-        }
-
-        public async Task<IActionResult> Create()
-        {
-            var rate = await _apiService.GetExchangeRateAsync();
-            ViewBag.ExchangeRate = rate;
-            await PopulateContractsDropdown();
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ServiceRequest serviceRequest)
-        {
-            if (ModelState.IsValid)
-            {
-                var (success, message) = await _apiService.CreateServiceRequestAsync(serviceRequest);
-
-                if (!success)
-                {
-                    ModelState.AddModelError("", message);
-                    var rate = await _apiService.GetExchangeRateAsync();
-                    ViewBag.ExchangeRate = rate;
-                    await PopulateContractsDropdown();
-                    return View(serviceRequest);
-                }
-
-                return RedirectToAction(nameof(Index));
-            }
-
-            var currentRate = await _apiService.GetExchangeRateAsync();
-            ViewBag.ExchangeRate = currentRate;
-            await PopulateContractsDropdown();
-            return View(serviceRequest);
-        }
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var serviceRequest = await _apiService.GetServiceRequestAsync(id);
-            if (serviceRequest == null) return NotFound();
-
-            var rate = await _apiService.GetExchangeRateAsync();
-            ViewBag.ExchangeRate = rate;
-
-            await PopulateContractsDropdown();
-            return View(serviceRequest);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ServiceRequest serviceRequest)
-        {
-            if (id != serviceRequest.Id) return NotFound();
-
-            if (ModelState.IsValid)
-            {
-                await _apiService.UpdateServiceRequestAsync(serviceRequest);
-                return RedirectToAction(nameof(Index));
-            }
-
-            await PopulateContractsDropdown();
-            return View(serviceRequest);
-        }
-
-        public async Task<IActionResult> Delete(int id)
-        {
-            var serviceRequest = await _apiService.GetServiceRequestAsync(id);
-            if (serviceRequest == null) return NotFound();
-            return View(serviceRequest);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            await _apiService.DeleteServiceRequestAsync(id);
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpGet]
+        // GET: api/servicerequests/exchangerate
+        [HttpGet("exchangerate")]
         public async Task<IActionResult> GetExchangeRate()
         {
-            var rate = await _apiService.GetExchangeRateAsync();
-            return Json(new { rate });
+            var rate = await _currencyService.GetUsdToZarRateAsync();
+            return Ok(new { rate });
         }
 
-        private async Task PopulateContractsDropdown()
+        // GET: api/servicerequests
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            var contracts = await _apiService.GetContractsAsync();
-            ViewBag.Contracts = new SelectList(contracts, "Id", "ServiceLevel");
+            var serviceRequests = await _serviceRequestRepository.GetAllAsync();
+            return Ok(serviceRequests);
+        }
+
+        // GET: api/servicerequests/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var serviceRequest = await _serviceRequestRepository.GetByIdAsync(id);
+            if (serviceRequest == null) return NotFound(new { message = "Service Request not found" });
+            return Ok(serviceRequest);
+        }
+
+        // GET: api/servicerequests/contract/5
+        [HttpGet("contract/{contractId}")]
+        public async Task<IActionResult> GetByContractId(int contractId)
+        {
+            var serviceRequests = await _serviceRequestRepository.GetByContractIdAsync(contractId);
+            return Ok(serviceRequests);
+        }
+
+        // POST: api/servicerequests
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ServiceRequest serviceRequest)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var rate = await _currencyService.GetUsdToZarRateAsync();
+            serviceRequest.CostZAR = _currencyService.ConvertUsdToZar(serviceRequest.CostUSD, rate);
+            serviceRequest.ExchangeRateUsed = rate;
+            serviceRequest.CreatedAt = DateTime.UtcNow;
+
+            var (success, message) = await _serviceRequestService.CreateServiceRequestAsync(serviceRequest);
+            if (!success) return BadRequest(new { message });
+
+            return CreatedAtAction(nameof(GetById), new { id = serviceRequest.Id }, serviceRequest);
+        }
+
+        // PUT: api/servicerequests/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] ServiceRequest serviceRequest)
+        {
+            if (id != serviceRequest.Id) return BadRequest(new { message = "ID mismatch" });
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var rate = await _currencyService.GetUsdToZarRateAsync();
+            serviceRequest.CostZAR = _currencyService.ConvertUsdToZar(serviceRequest.CostUSD, rate);
+            serviceRequest.ExchangeRateUsed = rate;
+
+            await _serviceRequestRepository.UpdateAsync(serviceRequest);
+            return Ok(serviceRequest);
+        }
+
+        // DELETE: api/servicerequests/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var serviceRequest = await _serviceRequestRepository.GetByIdAsync(id);
+            if (serviceRequest == null) return NotFound(new { message = "Service Request not found" });
+
+            await _serviceRequestRepository.DeleteAsync(id);
+            return Ok(new { message = "Service Request deleted successfully" });
         }
     }
 }
